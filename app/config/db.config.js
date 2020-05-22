@@ -1,8 +1,8 @@
 module.exports = {
-    HOST: "localhost",
-    USER: "root",
-    PASSOWRD: "123456",
-    DB: "testdb",
+    HOST: "berlin-fn.de",
+    USER: "bacw",
+    PASSOWRD: "afujwh§&379Fb",
+    DB: "bacwboard",
     dialect: "mysql",
     pool: {
         max: 5,         // maximum of 5 open connections

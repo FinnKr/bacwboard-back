@@ -32,7 +32,8 @@ exports.create = (req, res) => {
                                 // Create the user-object
                                 const user = {
                                     mail: req.body.mail,
-                                    password: hash
+                                    password: hash,
+                                    role: req.body.role
                                 }
 
                                 // Save the user to the database
@@ -60,4 +61,51 @@ exports.create = (req, res) => {
             message: "Auth failed"
         });
     }
+};
+
+exports.login = (req, res) => {
+    User.findAll({ where: { mail: req.body.mail }})
+        .then(data => {
+            if (data.length < 1){
+                res.status(401).json({
+                    message: "Auth failed"
+                });
+            } else {
+                bcrypt.compare(req.body.password, data[0].password, (err, result) => {
+                    if (err) {
+                        res.status(401).json({
+                            message: "Auth failed"
+                        });
+                    } else {
+                        if (result){
+                            console.log(req.body.mail + " " + req.body.password);
+                            
+                            const token = jwt.sign(
+                                {
+                                    mail: data[0].mail,
+                                    userId: data[0].id
+                                },
+                                constants.JWT_KEY,
+                                {
+                                    expiresIn: "1h"
+                                }
+                            );
+                            res.status(200).json({
+                                message: "Auth successful",
+                                token: token
+                            });
+                        } else {
+                            res.status(401).json({
+                                message: "Auth failed"
+                            });
+                        }
+                    }
+                });
+            }
+        })
+        .catch(err => {
+            res.status(500).json({
+                message: "Some internal error occured while getting the specified user"
+            });
+        });
 };

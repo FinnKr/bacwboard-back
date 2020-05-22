@@ -21,6 +21,7 @@ app.get("/", (req, res) => {
     res.status(200).json({  message: "Base route"});
 });
 
+// db.sequelize.sync();
 db.sequelize.sync({ force: true }).then(() => {
     console.log("Drop and resync database.");
 });

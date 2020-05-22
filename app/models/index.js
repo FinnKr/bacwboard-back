@@ -13,10 +13,22 @@ const sequelize = new Sequelize(dbConfig.DB, dbConfig.USER, dbConfig.PASSOWRD, {
     }
 });
 
+var User = require("./user.model.js")(sequelize, Sequelize);
+var Board = require("./board.model.js")(sequelize, Sequelize);
+
+User.hasMany(Board, {
+    foreignKey: "owner_id"
+});
+Board.belongsTo(User, {
+    foreignKey: "owner_id"
+});
+
 const db = {
     Sequelize: Sequelize,
     sequelize: sequelize,
-    users: require("./user.model.js")(sequelize, Sequelize)
+    users: User,
+    boards: Board
+
 };
 
 module.exports = db;
