@@ -18,7 +18,7 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 app.get("/", (req, res) => {
-    res.status(200).json({  message: "Base route"});
+    res.status(200).json({ message: "Base route" });
 });
 
 // db.sequelize.sync();

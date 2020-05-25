@@ -6,7 +6,6 @@ const User = db.users;
 const Op = db.Sequelize.Op;
 
 // Create and Save a new User
-
 exports.create = (req, res) => {
     // Check role
     if (req.userData.role == "admin") {
@@ -63,6 +62,7 @@ exports.create = (req, res) => {
     }
 };
 
+// Login to an existing user
 exports.login = (req, res) => {
     User.findAll({ where: { mail: req.body.mail }})
         .then(data => {
@@ -83,7 +83,7 @@ exports.login = (req, res) => {
                             const token = jwt.sign(
                                 {
                                     mail: data[0].mail,
-                                    userId: data[0].id
+                                    userid: data[0].id
                                 },
                                 constants.JWT_KEY,
                                 {
