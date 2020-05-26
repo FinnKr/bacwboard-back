@@ -28,7 +28,6 @@ const db = {
     sequelize: sequelize,
     users: User,
     boards: Board
-
 };
 
 module.exports = db;

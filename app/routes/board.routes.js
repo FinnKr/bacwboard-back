@@ -6,5 +6,8 @@ module.exports = app => {
     // Create a board
     router.post("/", checkAuth, boards.create);
 
+    // Get all boards from user
+    router.get("/", checkAuth, boards.findAllByOwner);
+
     app.use("/board", router);
 }

@@ -78,11 +78,9 @@ exports.login = (req, res) => {
                         });
                     } else {
                         if (result){
-                            console.log(req.body.mail + " " + req.body.password);
                             
                             const token = jwt.sign(
                                 {
-                                    mail: data[0].mail,
                                     userid: data[0].id
                                 },
                                 constants.JWT_KEY,

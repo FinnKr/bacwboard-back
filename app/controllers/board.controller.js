@@ -18,8 +18,8 @@ exports.create = (req, res) => {
                     } else {
                         const board = {
                             owner_id: req.userData.userid,
-                            title: req.body.title,
-                            category: req.body.category
+                            title: req.sanitize(req.body.title),
+                            category: req.sanitize(req.body.category)
                         }
 
                         Board.create(board)
@@ -27,9 +27,15 @@ exports.create = (req, res) => {
                                 res.status(201).json(data);
                             })
                             .catch(err => {
-                                res.status(500).json({
-                                    message: "Internal error occured while creating the board"
-                                });
+                                if (err instanceof db.Sequelize.ForeignKeyConstraintError) {
+                                    res.status(401).json({
+                                        message: "Auth failed"
+                                    });
+                                } else {
+                                    res.status(500).json({
+                                        message: "Internal error occured while creating the board"
+                                    });
+                                }
                             });
                     }
                 })
@@ -40,3 +46,15 @@ exports.create = (req, res) => {
                 });
         }
 };
+
+exports.findAllByOwner = (req, res) => {
+    Board.findAll({ where: { owner_id: req.userData.userid }})
+        .then(data => {
+            res.status(200).json(data);
+        })
+        .catch(err => {
+            res.status(500).json({
+                message: "Internal server error occured while getting boards"
+            });
+        });
+}
