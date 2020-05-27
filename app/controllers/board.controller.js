@@ -2,6 +2,7 @@ const he = require("he");
 const db = require("../models");
 const constants = require("../config/constants.js");
 const Board = db.boards;
+const Category = db.categories;
 const Op = db.Sequelize.Op;
 
 exports.create = (req, res) => {
@@ -17,26 +18,36 @@ exports.create = (req, res) => {
                             message: `Board "${req.body.title}" already exists`
                         });
                     } else {
-                        const board = {
-                            owner_id: req.userData.userid,
-                            title: he.encode(req.body.title),
-                            category: he.encode(req.body.category)
-                        }
-
-                        Board.create(board)
+                        const userid = req.userData.userid;
+                        const category = he.encode(req.body.category);
+                        const title = he.encode(req.body.title);
+                        var category_id;
+                        Category.findAll({ where: { owner_id: userid, name: category }})
                             .then(data => {
-                                res.status(201).json(data);
+                                if (data.length < 1){
+                                    const category = {
+                                        owner_id: userid,
+                                        name: category
+                                    }
+                                    Category.create(category)
+                                        .then(data => {
+                                            category_id = data.id;
+                                            createBoard(userid, title, category_id);
+                                        })
+                                        .catch(err => {
+                                            res.status(500).json({
+                                                message: "Internal error occured while creating the category"
+                                            });
+                                        });
+                                } else {
+                                    category_id = data[0].id;
+                                    createBoard(userid, title, category_id);
+                                }
                             })
                             .catch(err => {
-                                if (err instanceof db.Sequelize.ForeignKeyConstraintError) {
-                                    res.status(401).json({
-                                        message: "Auth failed"
-                                    });
-                                } else {
-                                    res.status(500).json({
-                                        message: "Internal error occured while creating the board"
-                                    });
-                                }
+                                res.status(500).json({
+                                    message: "Internal error occured while checking the category"
+                                });
                             });
                     }
                 })
@@ -50,12 +61,47 @@ exports.create = (req, res) => {
 
 exports.findAllByOwner = (req, res) => {
     Board.findAll({ where: { owner_id: req.userData.userid }})
-        .then(data => {
-            res.status(200).json(data);
+        .then(board_data => {
+            Category.findAll({ where: { id: data.category_id }})
+                .then(cat_data => {
+                    const res_data = {
+                        id: board_data.id,
+                        owner_id: board_data.owner_id,
+                        title: board_data.title,
+                        category: cat_data.name,
+                        createdAt: board_data.createdAt,
+                        updatedAt: board_data.updatedAt
+                    }
+                    res.status(200).json(res_data);
+                })
         })
         .catch(err => {
             res.status(500).json({
                 message: "Internal server error occured while getting boards"
             });
+        });
+}
+
+function createBoard(userid, title, category_id){
+    const board = {
+        owner_id: userid,
+        title: he.encode(title),
+        category_id: category_id
+    }
+
+    Board.create(board)
+        .then(data => {
+            res.status(201).json(data);
+        })
+        .catch(err => {
+            if (err instanceof db.Sequelize.ForeignKeyConstraintError) {
+                res.status(401).json({
+                    message: "Auth failed"
+                });
+            } else {
+                res.status(500).json({
+                    message: "Internal error occured while creating the board"
+                });
+            }
         });
 }

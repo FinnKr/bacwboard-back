@@ -1,5 +1,5 @@
 module.exports = (sequelize, Sequelize) => {
-    const Board = sequelize.define("board", {
+    const Category = sequelize.define("category", {
         owner_id: {
             type: Sequelize.INTEGER,
             references: {
@@ -8,19 +8,11 @@ module.exports = (sequelize, Sequelize) => {
             },
             allowNull: false
         },
-        title: {
+        name: {
             type: Sequelize.STRING,
-            allowNull: false
-        },
-        category_id: {
-            type: Sequelize.INTEGER,
-            references: {
-                model: "categories",
-                key: "id"
-            },
             allowNull: false
         }
     });
     
-    return Board;
+    return Category;
 }
