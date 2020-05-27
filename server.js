@@ -1,7 +1,6 @@
 const express = require("express");
 const bodyParser = require("body-parser");
 const cors = require("cors");
-const expressSanitizer = require('express-sanitizer');
 const db = require("./app/models");
 const PORT = process.env.PORT || 8081;
 const app = express();
@@ -17,8 +16,6 @@ app.use(bodyParser.json());
 
 // parse requests of content-type - application/x-www-form-urlencoded
 app.use(bodyParser.urlencoded({ extended: true }));
-
-app.use(expressSanitizer());
 
 app.get("/", (req, res) => {
     res.status(200).json({ message: "Base route" });

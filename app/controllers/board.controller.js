@@ -1,3 +1,4 @@
+const he = require("he");
 const db = require("../models");
 const constants = require("../config/constants.js");
 const Board = db.boards;
@@ -18,8 +19,8 @@ exports.create = (req, res) => {
                     } else {
                         const board = {
                             owner_id: req.userData.userid,
-                            title: req.sanitize(req.body.title),
-                            category: req.sanitize(req.body.category)
+                            title: he.encode(req.body.title),
+                            category: he.encode(req.body.category)
                         }
 
                         Board.create(board)
