@@ -19,20 +19,20 @@ exports.create = (req, res) => {
                         });
                     } else {
                         const userid = req.userData.userid;
-                        const category = he.encode(req.body.category);
+                        const category_name = he.encode(req.body.category);
                         const title = he.encode(req.body.title);
                         var category_id;
-                        Category.findAll({ where: { owner_id: userid, name: category }})
+                        Category.findAll({ where: { owner_id: userid, name: category_name }})
                             .then(data => {
                                 if (data.length < 1){
                                     const category = {
                                         owner_id: userid,
-                                        name: category
+                                        name: category_name
                                     }
                                     Category.create(category)
                                         .then(data => {
                                             category_id = data.id;
-                                            createBoard(userid, title, category_id);
+                                            createBoard(userid, title, category_id, res);
                                         })
                                         .catch(err => {
                                             res.status(500).json({
@@ -41,7 +41,7 @@ exports.create = (req, res) => {
                                         });
                                 } else {
                                     category_id = data[0].id;
-                                    createBoard(userid, title, category_id);
+                                    createBoard(userid, title, category_id, res);
                                 }
                             })
                             .catch(err => {
@@ -52,7 +52,7 @@ exports.create = (req, res) => {
                     }
                 })
                 .catch(err => {
-                    res.status(500).json({
+                    res.status(500).json({                        
                         message: "Internal error occured while checking the given title"
                     });
                 });
@@ -60,20 +60,9 @@ exports.create = (req, res) => {
 };
 
 exports.findAllByOwner = (req, res) => {
-    Board.findAll({ where: { owner_id: req.userData.userid }})
+    Board.findAll({ where: { owner_id: req.userData.userid }, include: [Category]})
         .then(board_data => {
-            Category.findAll({ where: { id: data.category_id }})
-                .then(cat_data => {
-                    const res_data = {
-                        id: board_data.id,
-                        owner_id: board_data.owner_id,
-                        title: board_data.title,
-                        category: cat_data.name,
-                        createdAt: board_data.createdAt,
-                        updatedAt: board_data.updatedAt
-                    }
-                    res.status(200).json(res_data);
-                })
+            res.status(200).json(board_data);
         })
         .catch(err => {
             res.status(500).json({
@@ -82,7 +71,7 @@ exports.findAllByOwner = (req, res) => {
         });
 }
 
-function createBoard(userid, title, category_id){
+function createBoard(userid, title, category_id, res){
     const board = {
         owner_id: userid,
         title: he.encode(title),
