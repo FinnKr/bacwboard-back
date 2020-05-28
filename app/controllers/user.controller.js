@@ -15,7 +15,7 @@ exports.create = (req, res) => {
                 message: "Mail, password or role cannot be empty!"
             });
         } else {
-            User.findAll({ where: { mail: req.body.mail }})
+            User.findAll({ where: { mail: req.body.mail } })
                 .then(data => {
                     if (data.length >= 1) {
                         res.status(422).json({
@@ -64,9 +64,9 @@ exports.create = (req, res) => {
 
 // Login to an existing user
 exports.login = (req, res) => {
-    User.findAll({ where: { mail: req.body.mail }})
+    User.findAll({ where: { mail: req.body.mail } })
         .then(data => {
-            if (data.length < 1){
+            if (data.length < 1) {
                 res.status(401).json({
                     message: "Auth failed"
                 });
@@ -77,8 +77,8 @@ exports.login = (req, res) => {
                             message: "Auth failed"
                         });
                     } else {
-                        if (result){
-                            
+                        if (result) {
+
                             const token = jwt.sign(
                                 {
                                     userid: data[0].id

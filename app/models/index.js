@@ -16,6 +16,7 @@ const sequelize = new Sequelize(dbConfig.DB, dbConfig.USER, dbConfig.PASSOWRD, {
 var User = require("./user.model.js")(sequelize, Sequelize);
 var Board = require("./board.model.js")(sequelize, Sequelize);
 var Category = require("./category.model.js")(sequelize, Sequelize);
+var Shared_Board = require("./shared_board.model.js")(sequelize, Sequelize);
 
 User.hasMany(Board, {
     foreignKey: "owner_id"
@@ -38,12 +39,27 @@ Board.belongsTo(Category, {
     foreignKey: "category_id"
 })
 
+User.hasMany(Shared_Board, {
+    foreignKey: "shared_user_id"
+});
+Shared_Board.belongsTo(User, {
+    foreignKey: "shared_user_id"
+});
+
+Board.hasMany(Shared_Board, {
+    foreignKey: "board_id"
+});
+Shared_Board.belongsTo(Board, {
+    foreignKey: "board_id"
+});
+
 const db = {
     Sequelize: Sequelize,
     sequelize: sequelize,
     users: User,
     boards: Board,
-    categories: Category
+    categories: Category,
+    shared_boards: Shared_Board
 };
 
 module.exports = db;

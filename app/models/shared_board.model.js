@@ -1,6 +1,6 @@
 module.exports = (sequelize, Sequelize) => {
-    const Category = sequelize.define("category", {
-        owner_id: {
+    const Shared_Board = sequelize.define("shared_board", {
+        shared_user_id: {
             type: Sequelize.INTEGER,
             references: {
                 model: "users",
@@ -8,11 +8,15 @@ module.exports = (sequelize, Sequelize) => {
             },
             allowNull: false
         },
-        name: {
-            type: Sequelize.STRING,
+        board_id: {
+            type: Sequelize.INTEGER,
+            references: {
+                model: "boards",
+                key: "id"
+            },
             allowNull: false
         }
     });
 
-    return Category;
+    return Shared_Board;
 }

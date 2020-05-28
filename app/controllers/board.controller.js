@@ -6,61 +6,61 @@ const Category = db.categories;
 const Op = db.Sequelize.Op;
 
 exports.create = (req, res) => {
-        if (!req.body.title || !req.body.category){
-            res.status(400).json({
-                message: "ownerid, title or category can not be empty!"
-            });
-        } else {
-            Board.findAll({ where: { title: req.body.title }})
-                .then(data => {
-                    if (data.length >= 1) {
-                        res.status(422).json({
-                            message: `Board "${req.body.title}" already exists`
-                        });
-                    } else {
-                        const userid = req.userData.userid;
-                        const category_name = he.encode(req.body.category);
-                        const title = he.encode(req.body.title);
-                        var category_id;
-                        Category.findAll({ where: { owner_id: userid, name: category_name }})
-                            .then(data => {
-                                if (data.length < 1){
-                                    const category = {
-                                        owner_id: userid,
-                                        name: category_name
-                                    }
-                                    Category.create(category)
-                                        .then(data => {
-                                            category_id = data.id;
-                                            createBoard(userid, title, category_id, res);
-                                        })
-                                        .catch(err => {
-                                            res.status(500).json({
-                                                message: "Internal error occured while creating the category"
-                                            });
-                                        });
-                                } else {
-                                    category_id = data[0].id;
-                                    createBoard(userid, title, category_id, res);
-                                }
-                            })
-                            .catch(err => {
-                                res.status(500).json({
-                                    message: "Internal error occured while checking the category"
-                                });
-                            });
-                    }
-                })
-                .catch(err => {
-                    res.status(500).json({                        
-                        message: "Internal error occured while checking the given title"
+    if (!req.body.title || !req.body.category) {
+        res.status(400).json({
+            message: "ownerid, title or category can not be empty!"
+        });
+    } else {
+        Board.findAll({ where: { title: req.body.title } })
+            .then(data => {
+                if (data.length >= 1) {
+                    res.status(422).json({
+                        message: `Board "${req.body.title}" already exists`
                     });
+                } else {
+                    const userid = req.userData.userid;
+                    const category_name = he.encode(req.body.category);
+                    const title = he.encode(req.body.title);
+                    var category_id;
+                    Category.findAll({ where: { owner_id: userid, name: category_name } })
+                        .then(data => {
+                            if (data.length < 1) {
+                                const category = {
+                                    owner_id: userid,
+                                    name: category_name
+                                }
+                                Category.create(category)
+                                    .then(data => {
+                                        category_id = data.id;
+                                        createBoard(userid, title, category_id, res);
+                                    })
+                                    .catch(err => {
+                                        res.status(500).json({
+                                            message: "Internal error occured while creating the category"
+                                        });
+                                    });
+                            } else {
+                                category_id = data[0].id;
+                                createBoard(userid, title, category_id, res);
+                            }
+                        })
+                        .catch(err => {
+                            res.status(500).json({
+                                message: "Internal error occured while checking the category"
+                            });
+                        });
+                }
+            })
+            .catch(err => {
+                res.status(500).json({
+                    message: "Internal error occured while checking the given title"
                 });
-        }
+            });
+    }
 };
 
 exports.findAllByOwner = (req, res) => {
-    Board.findAll({ where: { owner_id: req.userData.userid }, include: [Category]})
+    Board.findAll({ where: { owner_id: req.userData.userid }, include: [Category] })
         .then(board_data => {
             res.status(200).json(board_data);
         })
@@ -71,13 +71,12 @@ exports.findAllByOwner = (req, res) => {
         });
 }
 
-function createBoard(userid, title, category_id, res){
+function createBoard(userid, title, category_id, res) {
     const board = {
         owner_id: userid,
         title: he.encode(title),
         category_id: category_id
     }
-
     Board.create(board)
         .then(data => {
             res.status(201).json(data);
