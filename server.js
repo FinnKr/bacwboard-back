@@ -28,6 +28,7 @@ db.sequelize.sync({ force: true }).then(() => {
 
 require("./app/routes/user.routes.js")(app);
 require("./app/routes/board.routes.js")(app);
+require("./app/routes/shared_board.routes.js")(app);
 
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);

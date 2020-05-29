@@ -13,7 +13,7 @@ exports.create = (req, res) => {
     } else {
         Board.findByPk(req.body.board_id)
             .then(board_data => {
-                if (board_data.length < 1) {
+                if (!board_data) {
                     res.status(404).json({
                         message: `A board with specified ID: ${req.body.board_id} was not found`
                     });
@@ -25,7 +25,7 @@ exports.create = (req, res) => {
                                     message: "Auth failed"
                                 });
                             } else {
-                                createSharedBoard(req.body.shared_user_mail, req.body.board_id);
+                                createSharedBoard(req.body.shared_user_mail, req.body.board_id, res);
                             }
                         })
                         .catch(err => {
@@ -34,18 +34,44 @@ exports.create = (req, res) => {
                             });
                         });
                 } else {
-                    createSharedBoard(req.body.shared_user_mail, req.body.board_id)
+                    createSharedBoard(req.body.shared_user_mail, req.body.board_id, res);
                 }
             })
             .catch(err => {
                 res.status(500).json({
-                    message: "Internal server error occured while"
+                    message: "Internal server error occured while getting board information"
                 });
             });
     }
 };
 
-function createSharedBoard(shared_user_mail, board_id) {
+exports.findAllBySharedId = (req, res) => {
+    Shared_Board.findAll({ where: { shared_user_id: req.userData.userid }, include: [{ model: Board, include: [User, Category] }]})
+        .then(data => {
+            var res_data = [];
+            data.forEach(el => {
+                const el_new = {
+                    category: {
+                        name: el.board.category.name,
+                    },
+                    id: el.board_id,
+                    title: el.board.title,
+                    category_id: el.board.category_id
+                }
+                res_data.push(el_new);
+            });
+            res.status(200).json(res_data);
+        })
+        .catch(err => {
+            console.log(err);
+            
+            res.status(500).json({
+                message: "Internal server error occured while getting Shared Board data"
+            });
+        });
+}
+
+function createSharedBoard(shared_user_mail, board_id, res) {
     User.findAll({ where: { mail: shared_user_mail }})
         .then(data => {
             if (data.length < 1) {
