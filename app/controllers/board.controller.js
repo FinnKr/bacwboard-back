@@ -8,17 +8,17 @@ const Op = db.Sequelize.Op;
 exports.create = (req, res) => {
     if (!req.body.title || !req.body.category) {
         res.status(400).json({
-            message: "ownerid, title or category can not be empty!"
+            message: "title or category can not be empty!"
         });
     } else {
-        Board.findAll({ where: { title: req.body.title } })
+        const userid = req.userData.userid;
+        Board.findAll({ where: { title: req.body.title, owner_id: userid } })
             .then(data => {
                 if (data.length >= 1) {
                     res.status(422).json({
                         message: `Board "${req.body.title}" already exists`
                     });
                 } else {
-                    const userid = req.userData.userid;
                     const category_name = he.encode(req.body.category);
                     const title = he.encode(req.body.title);
                     var category_id;

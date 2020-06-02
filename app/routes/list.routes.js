@@ -1,14 +1,14 @@
 module.exports = app => {
-    const shared_boards = require("../controllers/shared_board.controller.js");
+    const lists = require("../controllers/list.controller.js");
     const checkAuth = require("../middleware/check-auth.js");
     const checkBoardPerm = require("../middleware/check-perm-board.js");
     var router = require("express").Router();
 
     // Create a shared board (Share a board)
-    router.post("/", checkAuth, checkBoardPerm,shared_boards.create);
+    router.post("/", checkAuth, checkBoardPerm, lists.create);
 
     // Get all shared boards
-    router.get("/", checkAuth, shared_boards.findAllBySharedId);
+    router.get("/", checkBoardPerm, checkAuth, lists.findAllByBoardId);
 
-    app.use("/share", router);
+    app.use("/list", router);
 }
