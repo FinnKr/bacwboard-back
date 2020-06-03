@@ -8,7 +8,7 @@ module.exports = app => {
     router.post("/", checkAuth, checkBoardPerm, lists.create);
 
     // Get all shared boards
-    router.get("/", checkBoardPerm, checkAuth, lists.findAllByBoardId);
+    router.get("/:board_id(\\d+)", checkAuth, checkBoardPerm, lists.findAllByBoardId);
 
     app.use("/list", router);
 }

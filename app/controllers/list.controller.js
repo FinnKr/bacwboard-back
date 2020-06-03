@@ -39,12 +39,12 @@ exports.create = (req, res) => {
 };
 
 exports.findAllByBoardId = (req, res) => {
-    if (!req.body.board_id) {
+    if (!req.params.board_id) {
         res.status(400).json({
             message: "board_id cannot be empty"
         });
     } else {
-        List.findAll({ where: { board_id: req.body.board_id }})
+        List.findAll({ where: { board_id: req.params.board_id }})
             .then(data => {
                 res.status(200).json(data);
             })

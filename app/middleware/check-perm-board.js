@@ -3,14 +3,20 @@ const Board = db.boards;
 const Shared_Board = db.shared_boards;
 
 module.exports = (req, res, next) => {
-        Board.findByPk(req.body.board_id)
+    var board_id;
+    if (req.body.board_id){
+        board_id = req.body.board_id;
+    } else if (req.params.board_id){
+        board_id = req.params.board_id;
+    }
+        Board.findByPk(board_id)
             .then(board_data => {
                 if (!board_data) {
                     res.status(404).json({
-                        message: `A board with specified ID: ${req.body.board_id} was not found`
+                        message: `A board with specified ID: ${board_id} was not found`
                     });
                 } else if (board_data.owner_id != req.userData.userid){
-                    Shared_Board.findAll({ where: { shared_user_id: req.userData.userid, board_id: req.body.board_id}})
+                    Shared_Board.findAll({ where: { shared_user_id: req.userData.userid, board_id: board_id}})
                         .then(shared_board_data => {
                             if (shared_board_data.length < 1) {
                                 res.status(401).json({
