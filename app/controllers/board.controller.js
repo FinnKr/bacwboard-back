@@ -74,7 +74,7 @@ exports.findAllByOwner = (req, res) => {
 function createBoard(userid, title, category_id, res) {
     const board = {
         owner_id: userid,
-        title: he.encode(title),
+        title: title,
         category_id: category_id
     }
     Board.create(board)

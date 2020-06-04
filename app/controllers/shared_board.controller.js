@@ -59,14 +59,8 @@ exports.findAllBySharedId = (req, res) => {
             res.status(200).json(res_data);
         })
         .catch(err => {
-            console.log(err);
-            
             res.status(500).json({
                 message: "Internal server error occured while getting Shared Board data"
             });
         });
-}
-
-function createSharedBoard(shared_user_mail, board_id, res) {
-    
 }

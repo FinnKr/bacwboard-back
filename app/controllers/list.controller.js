@@ -1,6 +1,7 @@
 const he = require("he");
 const db = require("../models");
 const List = db.lists;
+const Board = db.boards;
 
 exports.create = (req, res) => {
     if (!req.body.title || !req.body.board_id){
@@ -46,7 +47,16 @@ exports.findAllByBoardId = (req, res) => {
     } else {
         List.findAll({ where: { board_id: req.params.board_id }})
             .then(data => {
-                res.status(200).json(data);
+                Board.findByPk(req.params.board_id)
+                    .then(board_data => {
+                        data.push({board_title: board_data.title, board_id: board_data.id});
+                        res.status(200).json(data);
+                    })
+                    .catch(err => {
+                        res.status(500).json({
+                            message: "Internal error occured while fetching board data"
+                        });
+                    });
             })
             .catch(err => {
                 res.status(500).json({
