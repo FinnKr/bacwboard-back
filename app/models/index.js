@@ -18,6 +18,7 @@ var Board = require("./board.model.js")(sequelize, Sequelize);
 var Category = require("./category.model.js")(sequelize, Sequelize);
 var Shared_Board = require("./shared_board.model.js")(sequelize, Sequelize);
 var List = require("./list.model.js")(sequelize, Sequelize);
+var Listentry = require("./listentry.model.js")(sequelize, Sequelize);
 
 User.hasMany(Board, {
     foreignKey: "owner_id"
@@ -59,7 +60,14 @@ Board.hasMany(List, {
 });
 List.belongsTo(Board, {
     foreignKey: "board_id"
-})
+});
+
+List.hasMany(Listentry, {
+    foreignKey: "list_id"
+});
+Listentry.belongsTo(List, {
+    foreignKey: "list_id"
+});
 
 const db = {
     Sequelize: Sequelize,
@@ -68,7 +76,8 @@ const db = {
     boards: Board,
     categories: Category,
     shared_boards: Shared_Board,
-    lists: List
+    lists: List,
+    listentries: Listentry
 };
 
 module.exports = db;

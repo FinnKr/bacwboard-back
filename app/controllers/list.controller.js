@@ -20,15 +20,24 @@ exports.create = (req, res) => {
                         title: he.encode(req.body.title),
                         board_id: req.body.board_id
                     }
-                    List.create(list)
+                    List.findAll({ where: { board_id: list.board_id }})
                         .then(data => {
-                            res.status(201).json(data);
+                            list.order_number = data.length + 1;
+                            List.create(list)
+                                .then(data => {
+                                    res.status(201).json(data);
+                                })
+                                .catch(err => {
+                                    res.status(500).json({
+                                        message: "Internal error occured while creating new list"
+                                    });
+                                });
                         })
                         .catch(err => {
                             res.status(500).json({
-                                message: "Internal error occured while creating new list"
+                                message: "Internal error occured while fetching lists"
                             });
-                        })
+                        });
                 }
             })
             .catch(err => {
