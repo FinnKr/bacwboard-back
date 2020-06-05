@@ -6,7 +6,7 @@ const Category = db.categories;
 const Op = db.Sequelize.Op;
 
 exports.create = (req, res) => {
-    if (!req.body.title || !req.body.category) {
+    if (!req.body.title.trim() || !req.body.category.trim()) {
         res.status(400).json({
             message: "title or category can not be empty!"
         });
@@ -19,8 +19,8 @@ exports.create = (req, res) => {
                         message: `Board "${req.body.title}" already exists`
                     });
                 } else {
-                    const category_name = he.encode(req.body.category);
-                    const title = he.encode(req.body.title);
+                    const category_name = he.encode(req.body.category.trim());
+                    const title = he.encode(req.body.title.trim());
                     var category_id;
                     Category.findAll({ where: { owner_id: userid, name: category_name } })
                         .then(data => {

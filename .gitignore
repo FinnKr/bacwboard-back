@@ -1,5 +1,3 @@
 node_modules/
 dev-cmds/
-config/constants.js
-config/db.config.js
 .gitignore
