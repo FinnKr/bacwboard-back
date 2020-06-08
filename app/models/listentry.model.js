@@ -11,6 +11,10 @@ module.exports = (sequelize, Sequelize) => {
         title: {
             type: Sequelize.STRING,
             allowNull: false
+        },
+        order_number: {
+            type: Sequelize.INTEGER,
+            allowNull: false
         }
     });
 

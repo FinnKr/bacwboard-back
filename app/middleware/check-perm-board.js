@@ -15,7 +15,11 @@ module.exports = (req, res, next) => {
                     res.status(404).json({
                         message: `A board with specified ID: ${board_id} was not found`
                     });
-                } else if (board_data.owner_id != req.userData.userid){
+                } else if (!req.userData.userid) {
+                    res.status(401).json({
+                        message: "Auth failed"
+                    });
+                }else if (board_data.owner_id != req.userData.userid){
                     Shared_Board.findAll({ where: { shared_user_id: req.userData.userid, board_id: board_id}})
                         .then(shared_board_data => {
                             if (shared_board_data.length < 1) {
