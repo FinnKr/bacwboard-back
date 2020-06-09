@@ -11,5 +11,14 @@ module.exports = app => {
     // Get all shared boards
     router.get("/:board_id(\\d+)", checkAuth, checkBoardPerm, lists.findAllByBoardId);
 
+    // Create a listentry
+    router.post("/entry", checkAuth, listentries.create);       // CHECK IF BOARD PERM!!!!
+
+    // Get all listentries by list_id
+    router.get("/entry/:list_id(\\d+)", checkAuth, listentries.findAllByListId);
+
+    // Get all listentries by board id (in query string)
+    router.get("/entry", checkAuth, checkBoardPerm, listentries.findAllByBoardId);
+
     app.use("/list", router);
 }

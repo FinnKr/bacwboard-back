@@ -8,6 +8,8 @@ module.exports = (req, res, next) => {
         board_id = req.body.board_id;
     } else if (req.params.board_id){
         board_id = req.params.board_id;
+    } else if (req.query.board_id){
+        board_id = req.query.board_id;
     }
         Board.findByPk(board_id)
             .then(board_data => {
