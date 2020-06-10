@@ -12,48 +12,48 @@ exports.create = (req, res) => {
         });
     } else {
         const userid = req.userData.userid;
-        Board.findAll({ where: { title: req.body.title, owner_id: userid } })
+        const title = he.encode(req.body.title.trim());
+        const category_name = he.encode(req.body.category.trim());
+        var category_id;
+        Category.findAll({ where: { owner_id: userid, name: category_name } })
             .then(data => {
-                if (data.length >= 1) {
-                    res.status(422).json({
-                        message: `Board "${req.body.title}" already exists`
-                    });
-                } else {
-                    const category_name = he.encode(req.body.category.trim());
-                    const title = he.encode(req.body.title.trim());
-                    var category_id;
-                    Category.findAll({ where: { owner_id: userid, name: category_name } })
+                if (data.length < 1) {
+                    const category = {
+                        owner_id: userid,
+                        name: category_name
+                    }
+                    Category.create(category)
                         .then(data => {
-                            if (data.length < 1) {
-                                const category = {
-                                    owner_id: userid,
-                                    name: category_name
-                                }
-                                Category.create(category)
-                                    .then(data => {
-                                        category_id = data.id;
-                                        createBoard(userid, title, category_id, res);
-                                    })
-                                    .catch(err => {
-                                        res.status(500).json({
-                                            message: "Internal error occured while creating the category"
-                                        });
-                                    });
+                            category_id = data.id;
+                            createBoard(userid, title, category_id, res);
+                        })
+                        .catch(err => {
+                            res.status(500).json({
+                                message: "Internal error occured while creating the category"
+                            });
+                        });
+                } else {
+                    category_id = data[0].id;
+                    Board.findAll({ where: {title: title, owner_id: userid, category_id: category_id }})
+                        .then(data => {
+                            if (data.length >= 1) {
+                                res.status(422).json({
+                                    message: `Board "${title}" already exists`
+                                });
                             } else {
-                                category_id = data[0].id;
                                 createBoard(userid, title, category_id, res);
                             }
                         })
                         .catch(err => {
                             res.status(500).json({
-                                message: "Internal error occured while checking the category"
+                                message: "Internal error occured while checking for duplicates"
                             });
                         });
                 }
             })
             .catch(err => {
                 res.status(500).json({
-                    message: "Internal error occured while checking the given title"
+                    message: "Internal error occured while checking the category"
                 });
             });
     }

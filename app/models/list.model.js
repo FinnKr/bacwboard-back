@@ -9,7 +9,7 @@ module.exports = (sequelize, Sequelize) => {
             allowNull: false
         },
         title: {
-            type: Sequelize.STRING,
+            type: Sequelize.TEXT,
             allowNull: false
         },
         order_number: {

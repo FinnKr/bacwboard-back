@@ -28,6 +28,7 @@ exports.create = (req, res) => {
                                     res.status(201).json(data);
                                 })
                                 .catch(err => {
+                                    console.log(err);
                                     res.status(500).json({
                                         message: "Internal error occured while creating new list"
                                     });

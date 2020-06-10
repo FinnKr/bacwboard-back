@@ -1,4 +1,5 @@
 const db = require("../models");
+const he = require("he");
 const Listentry = db.listentries;
 const List = db.lists;
 const Board = db.boards;
@@ -16,7 +17,7 @@ exports.create = (req, res) => {
         const list_id = req.body.list_id;
         req.userData.list_id = list_id;
         checkListPerm(req, res, () => {
-            const title = req.body.title;
+            const title = he.encode(req.body.title);
             Listentry.findAll({ where: { list_id: list_id }})
                 .then(data => {
                     const order_number = data.length;
