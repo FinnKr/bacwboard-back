@@ -20,5 +20,8 @@ module.exports = app => {
     // Get all listentries by board id (in query string)
     router.get("/entry", checkAuth, checkBoardPerm, listentries.findAllByBoardId);
 
+    // Change order of listentry
+    router.put("/entry/changeorder", checkAuth, listentries.updateOrder);
+
     app.use("/list", router);
 }

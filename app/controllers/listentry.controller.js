@@ -95,6 +95,49 @@ exports.findAllByBoardId = (req, res) => {
     }
 };
 
+// Change order of listentry
+exports.updateOrder = (req, res) => {
+    if (!req.body.id || !req.body.upperId || !req.body.list_id){
+        res.status(400).json({
+            message: "id, upperid or list_id cannot be empty"
+        });
+    } else {
+        const list_id = req.body.list_id;
+        req.userData.list_id = list_id;
+        checkListPerm(req, res, () => {
+            const upperId = req.body.upperId;
+            const id = req.body.id;
+            if (upperId < 0) {
+                Listentry.update({ list_id: list_id, order_number: 0 }, { where: { id: id }})
+                    .then(data => {
+                        Listentry.increment({ order_number: 1 }, { where: {list_id: list_id, id: { [Op.ne]: id }, order_number: { [Op.gte]: 0 }}})
+                            .then(data => {
+                                cleanOrderNumbers();
+                            })
+                            .catch(err => {
+                                res.status(500).json({
+                                    message: "Internal error occured while incrementing order_numbers"
+                                });
+                            });
+                    })
+                    .catch(err => {
+                        res.status(500).json({
+                            message: "Internal error occured while updating listentry"
+                        });
+                    });
+            } else {
+                // Find listentry:upperid -> listentry(id): order: orderNumber(upperid)+1
+                // Increment orderNr where listid=listid, orderNumber >= orderNumber(upperid)+1, id != id
+                // CleanorderNumbers
+            }
+        });
+    }
+};
+
+function cleanOrderNumbers(){
+    // foreach list make ordernumber ascending from 0 in steps of 1
+}
+
 function checkListPerm(req, res, next) {
     List.findByPk(req.userData.list_id)
         .then(data => {
