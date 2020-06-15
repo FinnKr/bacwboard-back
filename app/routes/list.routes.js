@@ -12,7 +12,7 @@ module.exports = app => {
     router.get("/:board_id(\\d+)", checkAuth, checkBoardPerm, lists.findAllByBoardId);
 
     // Create a listentry
-    router.post("/entry", checkAuth, listentries.create);       // CHECK IF BOARD PERM!!!!
+    router.post("/entry", checkAuth, listentries.create);
 
     // Get all listentries by list_id
     router.get("/entry/:list_id(\\d+)", checkAuth, listentries.findAllByListId);
