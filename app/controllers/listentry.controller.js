@@ -233,23 +233,75 @@ function cleanOrderNumbers(oldListId, list_id, res){
     } else {
         lists.push(list_id);
     }
-    cleanOrderHelper(lists, res, response_data => {
-        if (typeof response_data != Array){
-            console.log(response_data);
-            
-            // res.status(500).json({
-            //     message: "Internal error occured while cleaning order"
-            // })
-            console.log(1111111111111111);
-            res.status(500).json(response_data)
-            
-        } else {
-            res.status(200).json(response_data);
-        }
-    });
+    var response_data = recFind(lists);
+    if (response_data == -1){
+        res.status(500).json({
+            message: "Internal error occured while cleaning OrderNumbers"
+        });
+    } else {
+        res.status(200).json(response_data);
+    }
 }
 
-async function cleanOrderHelper(lists, res, callback){
+function recFind(lists){
+    var response_data;
+    var listId = lists[0];
+    Listentry.findAll({ where: { list_id: listId }})
+        .then(data => {
+            var newData = [];
+            var i = 0;
+            data.sort((a, b) => { return a.order_number - b.order_number });
+            data.forEach(listentry => {
+                listentry.order_number = i;
+                newData.push(listentry);
+                i++;
+            });
+            response_data.push(recUpdate(newData));
+            if (response_data == -1){
+                return -1;
+            } else {
+                if (lists.length == 1){
+                    return response_data;
+                } else {
+                    lists.shift();
+                    response_data.push(recFind(lists));
+                    if (response_data[response_data.length - 1] == -1){
+                        return -1;
+                    } else {
+                        return response_data;
+                    }
+                }
+            }
+        })
+        .catch(err => {
+            return -1;
+        });
+}
+
+function recUpdate(newData) {
+    var response = [];
+    var dataSet = newData[0];
+    Listentry.update(dataSet, { where: { id: dataSet.id }})
+        .then(data => {
+            if (newData.length > 1){
+                newData.shift();
+                response.push(data, recUpdate(newData));
+                if (response[response.length - 1] == -1){
+                    return -1;
+                } else {
+                    return response;
+                }
+            } else {
+                response.push(data);
+                return(response);
+            }
+        })
+        .catch(err => {
+            return -1;
+        });
+}
+
+function cleanOrderHelper(lists, res, callback){
     var response_data = [-1];
     var listId;
     for (var i = 0; i < lists.length; i++){
@@ -265,22 +317,20 @@ async function cleanOrderHelper(lists, res, callback){
                         j++;
                     });
                     for (var k = 0; k < newData.length; k++){
-                        await Listentry.update(newData[k], { where: { id: newData[k].id }})
-                            .then(async data => {
+                        Listentry.update(newData[k], { where: { id: newData[k].id }})
+                            .then(data => {
                                 response_data.push(data);
                                 if ((i == lists.length - 1) && (k == newData.length -1)) {
-                                    console.log("whyhyh");
-                                    
-                                   await callback(response_data);
+                                   callback(response_data);
                                 }
                             })
                             .catch(async err => {
-                                await callback(err);
+                                callback(err);
                             });
                     }
                 })
                 .catch(async err => {
-                    await callback(err);
+                    callback(err);
                 });
     };
 }
