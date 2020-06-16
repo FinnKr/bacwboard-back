@@ -301,40 +301,6 @@ function recUpdate(newData) {
         });
 }
 
-function cleanOrderHelper(lists, res, callback){
-    var response_data = [-1];
-    var listId;
-    for (var i = 0; i < lists.length; i++){
-        listId = lists[i];
-        Listentry.findAll({ where: { list_id: listId }})
-                .then(async data => {
-                    var newData = [];
-                    var j = 0;
-                    data.sort((a, b) => { return a.order_number - b.order_number });
-                    data.forEach(listentry => {
-                        listentry.order_number = j;
-                        newData.push(listentry);
-                        j++;
-                    });
-                    for (var k = 0; k < newData.length; k++){
-                        Listentry.update(newData[k], { where: { id: newData[k].id }})
-                            .then(data => {
-                                response_data.push(data);
-                                if ((i == lists.length - 1) && (k == newData.length -1)) {
-                                   callback(response_data);
-                                }
-                            })
-                            .catch(async err => {
-                                callback(err);
-                            });
-                    }
-                })
-                .catch(async err => {
-                    callback(err);
-                });
-    };
-}
-
 function checkListPerm(req, res, next) {
     List.findByPk(req.userData.list_id)
         .then(data => {
