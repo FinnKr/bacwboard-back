@@ -5,11 +5,14 @@ module.exports = app => {
     const checkBoardPerm = require("../middleware/check-perm-board.js");
     var router = require("express").Router();
 
-    // Create a shared board (Share a board)
+    // Create a new list
     router.post("/", checkAuth, checkBoardPerm, lists.create);
 
-    // Get all shared boards
+    // Get all lists from board
     router.get("/:board_id(\\d+)", checkAuth, checkBoardPerm, lists.findAllByBoardId);
+
+    // Change list title
+    router.put("/:list_id(\\d+)", checkAuth, lists.editTitle);
 
     // Create a listentry
     router.post("/entry", checkAuth, listentries.create);
@@ -22,6 +25,9 @@ module.exports = app => {
 
     // Change order of listentry
     router.put("/entry/changeorder", checkAuth, listentries.updateOrder);
+
+    // Delete listentry by id
+    router.delete("/entry/:id(\\d+)", checkAuth, listentries.delete);
 
     app.use("/list", router);
 }

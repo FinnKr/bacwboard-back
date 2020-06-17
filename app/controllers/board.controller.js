@@ -71,6 +71,38 @@ exports.findAllByOwner = (req, res) => {
         });
 }
 
+exports.editTitle = (req, res) => {
+    if (!req.body.title.trim()){
+        res.status(400).json({
+            message: "Title cannot be empty"
+        });
+    } else {
+        Board.findAll({ where: { title: req.body.title, id: req.params.board_id }})
+            .then(data => {
+                if (data.length > 0){
+                    res.status(304).json({
+                        message: "Title not changed"
+                    });
+                } else {
+                    Board.update({ title: he.encode(req.body.title) }, { where: { id: req.params.board_id }})
+                        .then(data => {
+                            res.status(200).json(data);
+                        })
+                        .catch(err => {
+                            res.status(500).json({
+                                message: "Internal error occured while updating the board title"
+                            });
+                        });
+                }
+            })
+            .catch(err => {
+                res.status(500).json({
+                    message: "Internal error while checking for modification"
+                });
+            });
+    }
+}
+
 function createBoard(userid, title, category_id, res) {
     const board = {
         owner_id: userid,

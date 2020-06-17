@@ -95,6 +95,50 @@ exports.findAllByBoardId = (req, res) => {
     }
 };
 
+exports.delete = (req, res) => {
+    const id = req.params.id;
+    if (!id){
+        res.status(400).json({
+            message: "id cannot be empty"
+        });
+    } else {
+        Listentry.findByPk(id)
+            .then(data => {
+                if (!data.list_id){
+                    res.status(404).json({
+                        message: "A listentry with the specified id does not exist"
+                    });
+                } else {
+                    req.userData.list_id = data.list_id;
+                    checkListPerm(req, res, () => {
+                        Listentry.destroy({ where: { id: id }})
+                            .then(num => {
+                                if (num == 1){
+                                    res.status(200).json({
+                                        message: "Listentry was deleted successfully"
+                                    });
+                                } else {
+                                    res.status(404).json({
+                                        message: "A listentry with the specified id does not exist"
+                                    });
+                                }
+                            })
+                            .catch(err => {
+                                res.status(500).json({
+                                    message: "Internal error occured while deleting listentry"
+                                });
+                            });
+                    });
+                }
+            })
+            .catch(err => {
+                res.status(500).json({
+                    message: "Internal error occured while fetching listentry"
+                });
+            });
+    }
+}
+
 // Change order of listentry
 exports.updateOrder = (req, res) => {
     if (!req.body.id || !req.body.upperId || !req.body.list_id){

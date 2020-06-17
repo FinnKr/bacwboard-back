@@ -75,3 +75,73 @@ exports.findAllByBoardId = (req, res) => {
             });
     }
 };
+
+exports.editTitle = (req, res) => {
+    if (!req.body.title.trim() || !req.params.list_id){
+        res.status(400).json({
+            message: "Title or list_id cannot be empty"
+        });
+    } else {
+        req.userData.list_id = req.params.list_id;
+        checkListPerm(req, res, () => {
+            List.update({ title: he.encode(req.body.title) }, { where : { id: req.params.list_id }})
+                .then(data => {
+                    res.status(200).json(data);
+                })
+                .catch(err => {
+                    res.status(500).json({
+                        message: "Internal error occured while updating list title"
+                    });
+                });
+        });
+    }
+};
+
+function checkListPerm(req, res, next) {
+    List.findByPk(req.userData.list_id)
+        .then(data => {
+            if (!data.board_id) {
+                res.status(404).json({
+                    message: `A list with the specified id "${req.body.list_id}" was not found`
+                });
+            } else {
+                var board_id = data.board_id;
+                Board.findByPk(board_id)
+                    .then(board_data => {
+                        if (!board_data) {
+                            res.status(404).json({
+                                message: `A board with specified ID: ${board_id} was not found`
+                            });
+                        } else if (board_data.owner_id != req.userData.userid){
+                            Shared_Board.findAll({ where: { shared_user_id: req.userData.userid, board_id: board_id}})
+                                .then(shared_board_data => {
+                                    if (shared_board_data.length < 1) {
+                                        res.status(401).json({
+                                            message: "Auth failed"
+                                        });
+                                    } else {
+                                        next();
+                                    }
+                                })
+                                .catch(err => {
+                                    res.status(500).json({
+                                        message: "Internal server error occured while checking shared_board data"
+                                    });
+                                });
+                        } else {
+                            next();
+                        }
+                    })
+                    .catch(err => {
+                        res.status(500).json({
+                            message: "Internal server error occured while getting board information"
+                        });
+                    });
+            }
+        })
+        .catch(err => {
+            res.status(500).json({
+                message: "Internal error occured while getting list data"
+            });
+        });
+}
