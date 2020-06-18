@@ -14,6 +14,9 @@ module.exports = app => {
     // Change list title
     router.put("/:list_id(\\d+)", checkAuth, lists.editTitle);
 
+    // Delete list
+    router.delete("/:list_id(\\d+)", checkAuth, lists.delete);
+
     // Create a listentry
     router.post("/entry", checkAuth, listentries.create);
 

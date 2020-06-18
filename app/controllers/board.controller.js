@@ -1,8 +1,10 @@
 const he = require("he");
 const db = require("../models");
-const constants = require("../config/constants.js");
 const Board = db.boards;
 const Category = db.categories;
+const List = db.lists;
+const Listentry = db.listentries;
+const SharedBoard = db.shared_boards;
 const Op = db.Sequelize.Op;
 
 exports.create = (req, res) => {
@@ -98,6 +100,66 @@ exports.editTitle = (req, res) => {
             .catch(err => {
                 res.status(500).json({
                     message: "Internal error while checking for modification"
+                });
+            });
+    }
+}
+
+exports.delete = (req, res) => {
+    const board_id = req.params.board_id;
+    if (!req.params.board_id){
+        res.status(400).json({
+            message: "Board id cannot be empty"
+        });
+    } else {
+        SharedBoard.destroy({ where: { board_id: board_id }})
+            .then(num => {
+                List.findAll({ where: { board_id: board_id }, attributes: ["id"] })
+                    .then(data => {
+                        var listids = data.map(el => el.id);
+                        Listentry.destroy({ where: { list_id: { [Op.in]: listids }}})
+                            .then(num => {
+                                List.destroy({ where: { board_id: board_id }})
+                                    .then(num => {
+                                        Board.destroy({ where: { id: board_id }})
+                                            .then(num => {
+                                                if (num == 1){
+                                                    res.status(200).json({
+                                                        message: "Board deleted successfully"
+                                                    });
+                                                } else {
+                                                    res.status(404).json({
+                                                        message: "A board with the specified id does not exist"
+                                                    });
+                                                }
+                                            })
+                                            .catch(err => {
+                                                res.status(500).json({
+                                                    message: "Internal error occcured while deleting Board"
+                                                });
+                                            });
+                                    })
+                                    .catch(err => {
+                                        res.status(500).json({
+                                            message: "Internal error occcured while deleting Lists"
+                                        });
+                                    });
+                            })
+                            .catch(err => {
+                                res.status(500).json({
+                                    message: "Internal error occcured while deleting Listentries"
+                                });
+                            });
+                    })
+                    .catch(err => {
+                        res.status(500).json({
+                            message: "Internal error occcured while getting List data"
+                        });
+                    });
+            })
+            .catch(err => {
+                res.status(500).json({
+                    message: "Internal error occcured while deleting Shared_boards"
                 });
             });
     }

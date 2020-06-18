@@ -97,6 +97,36 @@ exports.editTitle = (req, res) => {
     }
 };
 
+exports.delete = (req, res) => {
+    const list_id = req.params.list_id;
+    if (!list_id){
+        res.status(400).json({
+            message: "list_id cannot be empty"
+        });
+    } else {
+        req.userData.list_id = list_id;
+        checkListPerm(req, res, () => {
+            List.destroy({ where: { id: list_id }})
+                .then(num => {
+                    if (num == 1){
+                        res.status(200).json({
+                            message: "List deleted successfully"
+                        });
+                    } else {
+                        res.status(404).json({
+                            message: "A list with the specified id was not found"
+                        });
+                    }
+                })
+                .catch(err => {
+                    res.status(500).json({
+                        message: "Internal error occured while deleting list"
+                    });
+                });
+        });
+    }
+};
+
 function checkListPerm(req, res, next) {
     List.findByPk(req.userData.list_id)
         .then(data => {

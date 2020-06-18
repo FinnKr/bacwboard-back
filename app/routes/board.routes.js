@@ -7,6 +7,9 @@ module.exports = app => {
     // Change the title of an existing board
     router.put("/:board_id(\\d+)", checkAuth, checkPerm, boards.editTitle);
 
+    // Delete board by id
+    router.delete("/:board_id(\\d+)", checkAuth, checkPerm, boards.delete)
+
     // Create a board
     router.post("/", checkAuth, boards.create);
 
