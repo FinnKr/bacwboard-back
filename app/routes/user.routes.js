@@ -9,5 +9,8 @@ module.exports = app => {
     // Login to an existing user
     router.post("/login", users.login);
 
+    // Check authorization
+    router.get("/auth", checkAuth, users.getAuth);
+
     app.use("/user", router);
 }

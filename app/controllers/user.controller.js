@@ -107,3 +107,10 @@ exports.login = (req, res) => {
             });
         });
 };
+
+// Check user auth (mostly done in middleware/check-auth.js)
+exports.getAuth = (req, res) => {
+    res.status(200).json({
+        message: "Valid token"
+    });
+};
