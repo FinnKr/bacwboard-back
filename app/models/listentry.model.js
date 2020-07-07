@@ -15,6 +15,9 @@ module.exports = (sequelize, Sequelize) => {
         order_number: {
             type: Sequelize.INTEGER,
             allowNull: false
+        },
+        description: {
+            type: Sequelize.TEXT
         }
     });
 

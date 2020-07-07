@@ -29,6 +29,9 @@ module.exports = app => {
     // Change order of listentry
     router.put("/entry/changeorder", checkAuth, listentries.updateOrder);
 
+    // Change title and/or description of listentry
+    router.put("/entry/:id(\\d+)", checkAuth, listentries.update);
+
     // Delete listentry by id
     router.delete("/entry/:id(\\d+)", checkAuth, listentries.delete);
 

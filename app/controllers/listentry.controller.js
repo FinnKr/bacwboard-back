@@ -137,7 +137,61 @@ exports.delete = (req, res) => {
                 });
             });
     }
-}
+};
+
+// Change title and/or description
+exports.update = (req, res) => {
+    const title = req.body.title;
+    const description = req.body.description;
+    const id = req.params.id;
+    if (!title && !description){
+        res.status(400).json({
+            message: "Title and description cannot both be empty"
+        });
+    } else {
+        Listentry.findByPk(id)
+            .then(data => {
+                if (!data.list_id){
+                    res.status(404).json({
+                        message: "A listentry with the specified id was not found"
+                    });
+                } else {
+                    req.userData.list_id = data.list_id;
+                    checkListPerm(req, res, () => {
+                        const listentry = {};
+                        if (title){
+                            listentry.title = title;
+                        }
+                        if (description){
+                            listentry.description = description;
+                        }
+                        Listentry.update(listentry, { where: { id: list_id }})
+                            .then(num => {
+                                if (num != 1) {
+                                    res.status(404).json({
+                                        message: "A listentry with the specified id was not found"
+                                    });
+                                } else {
+                                    res.status(200).json({
+                                        message: "Listentry was updated successfully"
+                                    });
+                                }
+                            })
+                            .catch(err => {
+                                res.status(500).json({
+                                    message: "Internal error occured while updating the listentry"
+                                });
+                            });
+                    });
+                }
+            })
+            .catch(err => {
+                res.status(500).json({
+                    message: "Internal error occured while checking listentry"
+                });
+            });
+    }
+};
 
 // Change order of listentry
 exports.updateOrder = (req, res) => {
@@ -177,11 +231,8 @@ exports.updateOrder = (req, res) => {
                                         // } else {
                                             if (upperId < 0) {
                                                 Listentry.update({ order_number: 0 }, { where: { id: id }})
-                                                    .then(data => {
-                                                        var oldListId = data.list_id
-                                                        if (oldListId != list_id){
+                                                    .then(data => {                                   
                                                             updateListId(list_id, id);
-                                                        }
                                                         Listentry.increment({ order_number: 1 }, { where: {list_id: list_id, id: { [Op.ne]: id }, order_number: { [Op.gte]: 0 }}})
                                                             .then(data => {
                                                                 cleanOrderNumbers(oldListId, list_id, res);
