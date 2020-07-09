@@ -21,13 +21,16 @@ module.exports = app => {
     router.post("/entry", checkAuth, listentries.create);
 
     // Get all listentries by list_id
-    router.get("/entry/:list_id(\\d+)", checkAuth, listentries.findAllByListId);
-
-    // Get all listentries by board id (in query string)
-    router.get("/entry", checkAuth, checkBoardPerm, listentries.findAllByBoardId);
+    //router.get("/entry/:list_id(\\d+)", checkAuth, listentries.findAllByListId);
 
     // Change order of listentry
     router.put("/entry/changeorder", checkAuth, listentries.updateOrder);
+
+    // Get a single listentry by id
+    router.get("/entry/:id(\\d+)", checkAuth, listentries.findOne);
+
+    // Get all listentries by board id (in query string)
+    router.get("/entry", checkAuth, checkBoardPerm, listentries.findAllByBoardId);
 
     // Change title and/or description of listentry
     router.put("/entry/:id(\\d+)", checkAuth, listentries.update);

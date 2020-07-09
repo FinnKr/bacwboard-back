@@ -20,7 +20,11 @@ exports.create = (req, res) => {
             const title = he.encode(req.body.title);
             Listentry.findAll({ where: { list_id: list_id }})
                 .then(data => {
-                    const order_number = data.length;
+                    var order_number = 0;
+                    if (data.length >= 1){
+                        var arrOrdNmbrs = data.map(a => a.order_number);
+                        order_number = Math.max(...arrOrdNmbrs) + 1;
+                    }
                     const listentry = {
                         list_id: list_id,
                         order_number: order_number,
@@ -139,33 +143,60 @@ exports.delete = (req, res) => {
     }
 };
 
+// Retrieve a single listentry by id
+exports.findOne = (req, res) => {
+    Listentry.findByPk(req.params.id)
+        .then(data => {
+            if (data.id){
+                req.userData.list_id = data.list_id;                                
+                checkListPerm(req, res, () => {
+                    res.status(200).json(data);
+                });
+            } else {
+                res.status(404).json({
+                    message: `A listentry with the specified id ${req.params.id} was not found`
+                });
+            }
+        })
+        .catch(err => {
+            res.status(500).json({
+                message: "Internal error occured while getting the listentry"
+            });
+        });
+};
+
 // Change title and/or description
 exports.update = (req, res) => {
     const title = req.body.title;
     const description = req.body.description;
     const id = req.params.id;
-    if (!title && !description){
+    if ((title == null) && (description == null)){
         res.status(400).json({
-            message: "Title and description cannot both be empty"
+            message: "Title and description cannot both be undefined"
         });
     } else {
+        if (title != null && !title.trim()){
+            res.status(400).json({
+                message: "Title cannot be empty"
+            });
+        } else {
         Listentry.findByPk(id)
             .then(data => {
                 if (!data.list_id){
                     res.status(404).json({
                         message: "A listentry with the specified id was not found"
                     });
-                } else {
+                } else {                    
                     req.userData.list_id = data.list_id;
                     checkListPerm(req, res, () => {
                         const listentry = {};
                         if (title){
                             listentry.title = title;
                         }
-                        if (description){
+                        if (description != null){
                             listentry.description = description;
                         }
-                        Listentry.update(listentry, { where: { id: list_id }})
+                        Listentry.update(listentry, { where: { id: id }})
                             .then(num => {
                                 if (num != 1) {
                                     res.status(404).json({
@@ -190,6 +221,7 @@ exports.update = (req, res) => {
                     message: "Internal error occured while checking listentry"
                 });
             });
+        }
     }
 };
 
@@ -232,14 +264,26 @@ exports.updateOrder = (req, res) => {
                                             if (upperId < 0) {
                                                 Listentry.update({ order_number: 0 }, { where: { id: id }})
                                                     .then(data => {                                   
-                                                            updateListId(list_id, id);
-                                                        Listentry.increment({ order_number: 1 }, { where: {list_id: list_id, id: { [Op.ne]: id }, order_number: { [Op.gte]: 0 }}})
+                                                        Listentry.findByPk(id)
                                                             .then(data => {
-                                                                cleanOrderNumbers(oldListId, list_id, res);
+                                                                var oldListId = data.list_id;
+                                                                if (oldListId != list_id){
+                                                                    updateListId(list_id, id);
+                                                                }
+                                                                Listentry.increment({ order_number: 1 }, { where: {list_id: list_id, id: { [Op.ne]: id }, order_number: { [Op.gte]: 0 }}})
+                                                                    .then(data => {
+                                                                        cleanOrderNumbers(oldListId, list_id, res);
+                                                                    })
+                                                                    .catch(err => {
+                                                                        
+                                                                        res.status(500).json({                                                                    
+                                                                            message: "Internal error occured while incrementing order_numbers"
+                                                                        });
+                                                                    });
                                                             })
                                                             .catch(err => {
                                                                 res.status(500).json({
-                                                                    message: "Internal error occured while incrementing order_numbers"
+                                                                    message: "Internal error occured while getting listentry"
                                                                 });
                                                             });
                                                     })
@@ -401,7 +445,7 @@ function checkListPerm(req, res, next) {
         .then(data => {
             if (!data.board_id) {
                 res.status(404).json({
-                    message: `A list with the specified id "${req.body.list_id}" was not found`
+                    message: `A list with the specified id "${req.userData.list_id}" was not found`
                 });
             } else {
                 var board_id = data.board_id;
@@ -438,8 +482,8 @@ function checkListPerm(req, res, next) {
                     });
             }
         })
-        .catch(err => {
-            res.status(500).json({
+        .catch(err => {        
+            res.status(500).json({                
                 message: "Internal error occured while getting list data"
             });
         });

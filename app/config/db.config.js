@@ -1,3 +1,4 @@
+// Config used by Sequelize to connect to MySQL-Database
 module.exports = {
     HOST: "localhost",
     USER: "root",
