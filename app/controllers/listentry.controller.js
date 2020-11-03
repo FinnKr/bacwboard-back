@@ -165,21 +165,25 @@ exports.findOne = (req, res) => {
         });
 };
 
-// Change title and/or description
+// Change title and/or description and/or due_date
 exports.update = (req, res) => {
     const title = req.body.title;
     const description = req.body.description;
+    const due_date = (req.body.due_date == "") ? null : new Date(req.body.due_date);
     const id = req.params.id;
-    if ((title == null) && (description == null)){
+    if ((title == null) && (description == null) && (due_date == null)){
         res.status(400).json({
-            message: "Title and description cannot both be undefined"
+            message: "At least one of Title, description or due_date should be defined"
+        });
+    } else if (title != null && !title.trim()){
+        res.status(400).json({
+            message: "Title cannot be empty"
+        });
+    } else if (due_date != null && due_date == "Invalid Date"){
+        res.status(400).json({
+            message: "The given due_date has an invalid format"
         });
     } else {
-        if (title != null && !title.trim()){
-            res.status(400).json({
-                message: "Title cannot be empty"
-            });
-        } else {
         Listentry.findByPk(id)
             .then(data => {
                 if (!data.list_id){
@@ -196,6 +200,7 @@ exports.update = (req, res) => {
                         if (description != null){
                             listentry.description = description;
                         }
+                        listentry.due_date = due_date;
                         Listentry.update(listentry, { where: { id: id }})
                             .then(num => {
                                 if (num != 1) {
@@ -221,7 +226,6 @@ exports.update = (req, res) => {
                     message: "Internal error occured while checking listentry"
                 });
             });
-        }
     }
 };
 

@@ -18,6 +18,9 @@ module.exports = (sequelize, Sequelize) => {
         },
         description: {
             type: Sequelize.TEXT
+        },
+        due_date: {
+            type: Sequelize.DATE
         }
     });
 

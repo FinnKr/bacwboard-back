@@ -32,7 +32,7 @@ module.exports = app => {
     // Get all listentries by board id (in query string)
     router.get("/entry", checkAuth, checkBoardPerm, listentries.findAllByBoardId);
 
-    // Change title and/or description of listentry
+    // Change title and/or description and/or due date of listentry
     router.put("/entry/:id(\\d+)", checkAuth, listentries.update);
 
     // Delete listentry by id
