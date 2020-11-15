@@ -2,6 +2,7 @@ const he = require("he");
 const db = require("../models");
 const List = db.lists;
 const Board = db.boards;
+const Shared_Board = db.shared_boards;
 
 exports.create = (req, res) => {
     if (!req.body.title || !req.body.board_id){
