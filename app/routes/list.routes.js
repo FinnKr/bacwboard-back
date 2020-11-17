@@ -17,6 +17,9 @@ module.exports = app => {
     // Delete list
     router.delete("/:list_id(\\d+)", checkAuth, lists.delete);
 
+    // Chage order of lists
+    router.put("/changeorder", checkAuth, lists.updateOrder);
+
     // Create a listentry
     router.post("/entry", checkAuth, listentries.create);
 

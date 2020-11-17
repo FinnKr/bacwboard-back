@@ -3,6 +3,7 @@ const db = require("../models");
 const List = db.lists;
 const Board = db.boards;
 const Shared_Board = db.shared_boards;
+const Op = db.Sequelize.Op;
 
 exports.create = (req, res) => {
     if (!req.body.title || !req.body.board_id){
@@ -128,8 +129,82 @@ exports.delete = (req, res) => {
     }
 };
 
+exports.updateOrder = (req, res) => {
+    const list_id = req.body.id;
+    const upper_list_id = req.body.upperId;
+    if (!list_id || !upper_list_id){
+        res.status(400).json({
+            message: "id or upperId cannot be empty"
+        });
+    } else {
+        req.userData.list_id = list_id;
+        checkListPerm(req, res, () => { // Check permission of list to be moved
+            req.userData.list_id = upper_list_id;
+            checkListPerm(req, res, () => { // Check permission of upper list
+                List.findAll({ where: { board_id: req.userData.board_id }})
+                    .then(data => {
+                        console.log(data);
+                        if (upper_list_id != -1){
+                            var upper_list_nr = data.find(list => {
+                                return list.id == upper_list_id;
+                            }).order_number;
+                            List.increment({ order_number: 1 }, { where: {board_id: req.userData.board_id, id: { [Op.ne]: list_id }, order_number: { [Op.gt]: upper_list_nr }}})
+                                .then(data => {
+                                    console.log(list_id);
+                                    console.log(upper_list_nr);
+                                    List.update({order_number: upper_list_nr + 1}, {where: {id: list_id}})
+                                        .then(data => {
+                                            res.status(200).json({
+                                                message: "Order changed successfully"
+                                            });
+                                        })
+                                        .catch(err => {
+                                            res.status(500).json({
+                                                message: "Internal error occured while updating order number"
+                                            });
+                                        });
+                                })
+                                .catch(err => {
+                                    res.status(500).json({
+                                        message: "Internal error occured while updating order numbers"
+                                    });
+                                });
+                        } else {
+                            List.increment({ order_number: 1}, { where: {board_id: req.userData.board_id, id: { [Op.ne]: list_id }}})
+                                .then(data => {
+                                    List.update({order_number: 1}, {where: {id: list_id}})
+                                        .then(data => {
+                                            res.status(200).json({
+                                                message: "Order changed successfully"
+                                            });
+                                        })
+                                        .catch(err => {
+                                            res.status(500).json({
+                                                message: "Internal error occured while updating order number"
+                                            });
+                                        });
+                                })
+                                .catch(err => {
+                                    res.status(500).json({
+                                        message: "Internal error occured while setting list to top"
+                                    });
+                                });
+                        }
+                    })
+                    .catch(err => {
+                        console.log(err);
+                        res.status(500).json({
+                            message: "Internal error occured while getting lists"
+                        })
+                    });
+            });
+        });
+    }
+};
+
 function checkListPerm(req, res, next) {
-    List.findByPk(req.userData.list_id)
+    if (req.userData.list_id != -1){
+        List.findByPk(req.userData.list_id)
         .then(data => {
             if (!data.board_id) {
                 res.status(404).json({
@@ -137,6 +212,7 @@ function checkListPerm(req, res, next) {
                 });
             } else {
                 var board_id = data.board_id;
+                req.userData.board_id = board_id;
                 Board.findByPk(board_id)
                     .then(board_data => {
                         if (!board_data) {
@@ -175,4 +251,7 @@ function checkListPerm(req, res, next) {
                 message: "Internal error occured while getting list data"
             });
         });
+    } else {
+        next();
+    }
 }

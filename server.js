@@ -21,10 +21,10 @@ app.get("/", (req, res) => {
     res.status(200).json({ message: "Base route" });
 });
 
-// db.sequelize.sync();
-db.sequelize.sync({ force: true }).then(() => {
-    console.log("Dropped and resynced database.");
-});
+db.sequelize.sync();
+//db.sequelize.sync({ force: true }).then(() => {
+//    console.log("Dropped and resynced database.");
+//});
 
 require("./app/routes/user.routes.js")(app);
 require("./app/routes/board.routes.js")(app);
