@@ -24,7 +24,8 @@ exports.create = (req, res) => {
                     }
                     List.findAll({ where: { board_id: list.board_id }})
                         .then(data => {
-                            list.order_number = data.length + 1;
+                            data.sort((a,b) => {return a.order_number - b.order_number});
+                            list.order_number = data[data.length-1].order_number + 1;
                             List.create(list)
                                 .then(data => {
                                     res.status(201).json(data);
